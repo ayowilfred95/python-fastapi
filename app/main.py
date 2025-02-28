@@ -27,7 +27,7 @@ class Post(BaseModel):
     title: str
     content: str
     is_published: bool = True
-    rating: Optional[int] = None
+    # rating: Optional[int] = None
 
 
 while True:
@@ -42,6 +42,16 @@ while True:
         )
         cursor = conn.cursor()
         print("Connected to the database successfully!")
+        # Ensure the table exists
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS post (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                is_published BOOLEAN DEFAULT TRUE
+            );
+        """)
+        conn.commit()  # Commit changes to the database
         break
 
     except Exception as error:
@@ -103,11 +113,10 @@ async def get_post(id: int, response: Response):
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 async def post_data(post: Post):
-    post_dict = post.model_dump()
-    post_dict["id"] = randrange(0, 100)
-    my_posts.append(post_dict)
-
-    return {"data": post_dict}
+    cursor.execute("""INSERT INTO post(title, content,is_published) VALUES(%s, %s, %s) RETURNING * """,
+                   (post.title, post.content, post.is_published))
+    new_post = cursor.fetchone()
+    return {"data": new_post}
 
 
 @app.post("/posts/{id}/delete")
