@@ -1,0 +1,39 @@
+services:
+  db:
+    container_name: FastApi-Postgres
+    image: postgres:15
+    env_file:
+      - .env
+    environment:
+      - "POSTGRES_USER:fastapi"
+      - "POSTGRES_PASSWORD:fastapi"
+      - "POSTGRES_DB:fastapi"
+    ports:
+      - "5432:5432"
+    volumes:
+      - FastApi_postgres_data:/var/lib/postgresql/data
+    networks:
+      - fastapi_network
+
+  # pgadmin:
+  #   container_name: FastApi-Pgadmin
+  #   image: dpage/pgadmin4
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+  #     - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - FastApi_pgadmin_data:/var/lib/pgadmin
+  #   networks:
+  #     - fastapi_network
+
+networks:
+  fastapi_network:
+    driver: bridge
+
+volumes:
+  FastApi_postgres_data:
+  # FastApi_pgadmin_data:
