@@ -6,6 +6,7 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,20 +30,24 @@ class Post(BaseModel):
     rating: Optional[int] = None
 
 
-try:
-    conn = psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        cursor_factory=RealDictCursor
-    )
-    cursor = conn.cursor()
-    print("Connected to the database successfully!")
-except Exception as error:
-    print("Failed to connect to database!")
-    print(error)
+while True:
+    try:
+        conn = psycopg2.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            cursor_factory=RealDictCursor
+        )
+        cursor = conn.cursor()
+        print("Connected to the database successfully!")
+        break
+
+    except Exception as error:
+        print("Failed to connect to database!")
+        print(error)
+        time.sleep(2)  # Retry only on failure
 
 
 my_posts = [
