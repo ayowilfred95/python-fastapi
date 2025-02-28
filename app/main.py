@@ -44,7 +44,7 @@ while True:
         print("Connected to the database successfully!")
         # Ensure the table exists
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS post (
+            CREATE TABLE IF NOT EXISTS posts (
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL,
@@ -96,7 +96,10 @@ async def root():
 
 @app.get("/posts")
 async def get_posts():
-    return {"posts": my_posts}
+    cursor.execute(""" SELECT * FROM posts """)
+    posts = cursor.fetchall()
+    print(posts)
+    return {"data": posts}
 
 
 @app.get("/posts/{id}")
@@ -113,9 +116,10 @@ async def get_post(id: int, response: Response):
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 async def post_data(post: Post):
-    cursor.execute("""INSERT INTO post(title, content,is_published) VALUES(%s, %s, %s) RETURNING * """,
+    cursor.execute("""INSERT INTO posts(title, content,is_published) VALUES(%s, %s, %s) RETURNING * """,
                    (post.title, post.content, post.is_published))
     new_post = cursor.fetchone()
+    conn.commit()
     return {"data": new_post}
 
 
