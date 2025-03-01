@@ -93,7 +93,7 @@ def delete_one_post(id):
 async def root():
     return {"Hello": "World"}
 
-
+# Get all posts
 @app.get("/posts")
 async def get_posts():
     cursor.execute(""" SELECT * FROM posts """)
@@ -101,7 +101,7 @@ async def get_posts():
     print(posts)
     return {"data": posts}
 
-
+# Get a post
 @app.get("/posts/{id}")
 async def get_post(id: int, response: Response):
     cursor.execute("""SELECT * FROM posts WHERE id = %s""", (id,))
@@ -112,6 +112,7 @@ async def get_post(id: int, response: Response):
     return {"data": post}
 
 
+# Create a post
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 async def post_data(post: Post):
     cursor.execute("""INSERT INTO posts(title, content,is_published) VALUES(%s, %s, %s) RETURNING * """,
@@ -121,10 +122,11 @@ async def post_data(post: Post):
     return {"data": new_post}
 
 
+# Delete a post
 @app.post("/posts/{id}/delete")
 async def delete_post(id: int):
     cursor.execute("""DELETE FROM posts WHERE id = %s returning *""", str((id)),)
-    deleted_post = cursor.fetchone
+    deleted_post = cursor.fetchone()
     #Commit the transaction
     conn.commit()
     index = delete_one_post(id)
@@ -132,3 +134,17 @@ async def delete_post(id: int):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f'Post not found')
     return {"message": f"post with id: {id} deleted successfully"}
+
+
+# Update a post
+@app.post("/posts/{id}/update")
+async def update_post(id: int, post:Post):
+    cursor.execute("""UPDATE posts SET title =  %s, content = %s, is_published = %s WHERE id = %s RETURNING * """, (post.title,post.content, post.is_published, id ))
+    updated_post = cursor.fetchone()
+    conn.commit()
+    if updated_post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Post not found')
+    return {"data":updated_post}
+
+   
+
