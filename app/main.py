@@ -123,9 +123,12 @@ async def post_data(post: Post):
 
 @app.post("/posts/{id}/delete")
 async def delete_post(id: int):
+    cursor.execute("""DELETE FROM posts WHERE id = %s returning *""", str((id)),)
+    deleted_post = cursor.fetchone
+    #Commit the transaction
+    conn.commit()
     index = delete_one_post(id)
-    if index == None:
+    if delete_post == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f'Post not found')
-    my_posts.pop(index)
     return {"message": f"post with id: {id} deleted successfully"}
